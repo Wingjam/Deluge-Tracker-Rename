@@ -8,7 +8,7 @@ import os
 import sys
 import platform
 import shutil
-import cPickle
+import pickle
 
 orig_tracker_url = 'udp://xxx'
 new_tracker_url = 'udp://xxx'
@@ -27,7 +27,7 @@ else:
 print("State file: %s" % state_file_path)
 print("Replace '%s' with '%s'" % (orig_tracker_url, new_tracker_url))
 state_file = open(state_file_path, 'rb')
-state = cPickle.load(state_file)
+state = pickle.load(state_file)
 state_file.close()
 
 state_modified = False
@@ -41,7 +41,7 @@ for torrent in state.torrents:
 if state_modified:
     shutil.copyfile(state_file_path, state_file_path + '.old')
     state_file = open(state_file_path, 'wb')
-    cPickle.dump(state, state_file)
+    pickle.dump(state, state_file)
     state_file.close()
     print("State Updated")
 else:
