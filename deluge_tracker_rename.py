@@ -1,17 +1,14 @@
-#!/usr/bin/env python
-#
-# Find and replace tracker urls in a Deluge torrents.state
-#
-# Need to edit the variables: orig_tracker_url and new_tracker_url
-
 import os
 import sys
 import platform
 import shutil
 import pickle
+import argparse
 
-orig_tracker_url = 'udp://xxx'
-new_tracker_url = 'udp://xxx'
+parser = argparse.ArgumentParser(description="Find and replace tracker urls in a Deluge torrents.state")
+parser.add_argument("orig_tracker_url", help="The original tracker url to be replaced.", type=str)
+parser.add_argument("new_tracker_url", help="The new tracker url to replace the original one.", type=str)
+args = parser.parse_args()
 
 if platform.system() in ('Windows', 'Microsoft'):
     state_file_path = os.path.join(os.environ.get('APPDATA'), 'deluge', 'state', 'torrents.state')
@@ -24,25 +21,25 @@ if platform.system() in ('Windows', 'Microsoft'):
 else:
     state_file_path = os.path.expanduser('~/.config/deluge/state/torrents.state')
 
-print("State file: %s" % state_file_path)
-print("Replace '%s' with '%s'" % (orig_tracker_url, new_tracker_url))
+print("State file : {}".format(state_file_path))
+print("Replace '{}' with '{}'" .format(args.orig_tracker_url, args.new_tracker_url))
 state_file = open(state_file_path, 'rb')
 state = pickle.load(state_file)
 state_file.close()
 
-state_modified = False
+state_modified_count = 0
 for torrent in state.torrents:
     for tracker in torrent.trackers:
-        if tracker['url'] == orig_tracker_url:
-            tracker['url'] = new_tracker_url
-            state_modified = True
+        if tracker['url'] == args.orig_tracker_url:
+            tracker['url'] = args.new_tracker_url
+            state_modified_count += 1
 
 
-if state_modified:
+if state_modified_count:
     shutil.copyfile(state_file_path, state_file_path + '.old')
     state_file = open(state_file_path, 'wb')
     pickle.dump(state, state_file)
     state_file.close()
-    print("State Updated")
+    print("State Updated ({}/{})".format(state_modified_count, len(state.torrents)))
 else:
     print("Nothing to do")
